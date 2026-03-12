@@ -35,7 +35,7 @@ def run(message: str) -> Dict[str, object]:
         response = requests.post(
             OLLAMA_URL,
             json={"model": MODEL, "prompt": f"User: {message}\nAssistant:", "stream": False},
-            timeout=60,
+            timeout=300,
         )
         response.raise_for_status()
         result = str(response.json().get("response", "")).strip()

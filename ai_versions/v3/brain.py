@@ -48,7 +48,7 @@ def _ollama_generate(prompt: str) -> str:
     response = requests.post(
         OLLAMA_URL,
         json={"model": MODEL, "prompt": prompt, "stream": False},
-        timeout=60,
+        timeout=300,
     )
     response.raise_for_status()
     return str(response.json().get("response", "")).strip()
