@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
+import requests
 
 from core.logger import get_logger
 
@@ -135,16 +136,32 @@ def get_available_models() -> List[str]:
     Catatan: Untuk kesederhanaan dan stabilitas, daftar ini statis.
     """
     try:
-        models = [
+        static_models = [
             "llama3:latest",
             "qwen2.5:7b",
             "gemma3:4b",
         ]
-        logger.info(f"Available models: {models}")
-        return models
+        base_url = get_env("OLLAMA_URL", "http://localhost:11434").rstrip("/")
+        resp = requests.get(f"{base_url}/api/tags", timeout=3)
+        resp.raise_for_status()
+        payload = resp.json() if resp.content else {}
+        installed = [
+            str(m.get("name", "")).strip()
+            for m in payload.get("models", [])
+            if str(m.get("name", "")).strip()
+        ]
+
+        # Installed models are prioritized; static list is appended as fallback choices.
+        merged = list(dict.fromkeys(installed + static_models))
+        logger.info(f"Available models (installed+static): {merged}")
+        return merged
     except Exception as e:
-        logger.error(f"Failed reading available models: {e}")
-        return []
+        logger.error(f"Failed reading installed models from Ollama: {e}")
+        return [
+            "llama3:latest",
+            "qwen2.5:7b",
+            "gemma3:4b",
+        ]
 
 
 def get_active_model() -> str:

@@ -15,6 +15,7 @@ from typing import Any, Dict
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse
 
 from core.exceptions import AIError
 from core.logger import get_logger
@@ -93,4 +94,10 @@ app.include_router(model_router)
 app.include_router(stats_router)
 app.include_router(ollama_router)
 app.include_router(logs_router)
+
+
+@app.get("/ui")
+async def ui_page() -> FileResponse:
+    """Serve the built-in dashboard UI page."""
+    return FileResponse("frontend/index.html")
 
